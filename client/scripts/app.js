@@ -46,7 +46,6 @@ var app = {
       success: function (data) {
         // Clear messages input
         app.$message.val('');
-
         // Trigger a fetch to update the messages, pass true to animate
         app.fetch();
       },
@@ -96,7 +95,6 @@ var app = {
 
   renderMessages: function(messages, animate) {
     // Clear existing messages`
-    console.log('hi');
     app.clearMessages();
     app.stopSpinner();
     if (Array.isArray(messages)) {

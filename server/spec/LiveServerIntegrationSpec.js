@@ -60,7 +60,7 @@ describe('server', function() {
       request('http://127.0.0.1:3000/classes/messages', function(error, response, body) {
         var messages = JSON.parse(body).results;
         expect(messages[0].username).to.equal('Jono');
-        expect(messages[0].message).to.equal('Do my bidding!');
+        expect(messages[0].text).to.equal('Do my bidding!');
         done();
       });
     });
@@ -73,5 +73,14 @@ describe('server', function() {
     });
   });
 
-
+  it('Should return headers for a OPTIONS request', function(done) {
+    var requestParams = {method: 'OPTIONS',
+      uri: 'http://127.0.0.1:3000/classes/messages',
+    };
+    request(requestParams, function(error, response, body) {
+      expect(response.statusCode).to.equal(200);
+      expect(response.headers).to.be.an('object');
+      done();
+    });
+  });
 });

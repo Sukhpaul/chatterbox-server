@@ -77,7 +77,7 @@ describe('Node Server Request Listener Function', function() {
   it('Should respond with messages that were previously posted', function() {
     var stubMsg = {
       username: 'Jono',
-      message: 'Do my bidding!'
+      text: 'Do my bidding!'
     };
     var req = new stubs.request('/classes/messages', 'POST', stubMsg);
     var res = new stubs.response();
@@ -96,7 +96,7 @@ describe('Node Server Request Listener Function', function() {
     var messages = JSON.parse(res._data).results;
     expect(messages.length).to.be.above(0);
     expect(messages[0].username).to.equal('Jono');
-    expect(messages[0].message).to.equal('Do my bidding!');
+    expect(messages[0].text).to.equal('Do my bidding!');
     expect(res._ended).to.equal(true);
   });
 
@@ -113,6 +113,47 @@ describe('Node Server Request Listener Function', function() {
       function() {
         expect(res._responseCode).to.equal(404);
       });
+  });
+
+  it('Store all the chat history', function() {
+    var stubMsg = {
+      username: 'Jono',
+      text: 'Do my bidding!'
+    };
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    var res = new stubs.response(); 
+    handler.requestHandler(req, res);
+    handler.requestHandler(req, res);
+    handler.requestHandler(req, res);
+    // get request
+    req = new stubs.request('/classes/messages', 'GET');
+    res = new stubs.response();
+
+    handler.requestHandler(req, res);
+    // check if response length === 3
+    var messages = JSON.parse(res._data).results;
+    console.log(messages);
+    expect(messages.length).to.be.above(3);
+
+  });
+
+  it('Should store roomname information', function() {
+    var stubMsg = {
+      username: 'Jono',
+      text: 'Do my bidding!',
+      roomname: 'lobby'
+    };
+    var req = new stubs.request('/classes/messages', 'POST', stubMsg);
+    var res = new stubs.response(); 
+    handler.requestHandler(req, res);
+    
+    req = new stubs.request('/classes/messages', 'GET');
+    res = new stubs.response();
+
+    handler.requestHandler(req, res);
+    var messages = JSON.parse(res._data).results;
+    var lastMessage = messages[messages.length - 1];
+    expect(Object.keys(lastMessage)[0].includes('roomname')).to.equal(true);
   });
 
 });

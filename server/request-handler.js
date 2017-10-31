@@ -69,16 +69,16 @@ var requestHandler = function(request, response) {
     var body = '';
     request.on('data', function(data) {
       body += data;
-      console.log(data);
     });
     
     // 
     request.on('end', function() {
       var post = qs.parse(body);
-      // console.log(JSON.parse(Object.keys(post)[0]));
-      var parsedPost = JSON.parse(Object.keys(post)[0]);
+      console.log(post);
+      post.objectId = storage.results.length;
+      // var parsedPost = JSON.parse(Object.keys(post)[0]);
       // storage.results.push(JSON.parse(post));
-      storage.results.push(parsedPost);
+      storage.results.push(post);
       response.writeHead(201, defaultCorsHeaders);
       response.end(JSON.stringify(storage));
     });
