@@ -11,8 +11,21 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
-
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept',
+  'access-control-max-age': 10 // Seconds.
+};
+var storage = {
+  results: [{
+    username: 'Jono',
+    text: 'Do my bidding!'}
+  ] 
+};
 var requestHandler = function(request, response) {
+  var qs = require('querystring');
+//console.log(requestfg);
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -28,7 +41,7 @@ var requestHandler = function(request, response) {
   // debugging help, but you should always be careful about leaving stray
   // console.logs in your code.
   console.log('Serving request type ' + request.method + ' for url ' + request.url);
-
+  
   // The outgoing status.
   var statusCode = 200;
 
@@ -39,12 +52,43 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   response.writeHead(statusCode, headers);
+  if (!request.url.includes('/classes/messages')) {
+    response.writeHead(404, {'Content-Type': 'application/json'});
+    response.end(JSON.stringify('Invalid endpoint'));
+  } 
+  if (request.method === 'GET') {
+    response.writeHead(200, defaultCorsHeaders);
+    response.end(JSON.stringify(storage));  
+  }
+  if (request.method === 'POST') {
+    var body = '';
+    request.on('data', function(data) {
+      body += data;
+      console.log(data);
+    });
+    
+    // 
+    request.on('end', function() {
+      var post = qs.parse(body);
+      // console.log(JSON.parse(Object.keys(post)[0]));
+      var parsedPost = JSON.parse(Object.keys(post)[0]);
+      // storage.results.push(JSON.parse(post));
+      storage.results.push(parsedPost);
+      response.writeHead(201, defaultCorsHeaders);
+      response.end(JSON.stringify(storage));
+    });
+  } 
+  if (request.method === 'OPTIONS') {
+    response.writeHead(200, defaultCorsHeaders);
+    response.end(JSON.stringify(storage));
+  }
 
+  
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -52,7 +96,13 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-  response.end('Hello, World!');
+  
+  // if request is GET 
+    // set header to..
+    //set status code
+    // add requested data to respsonse 
+     
+  //response.end(JSON.stringify('Hello, Worldssssssssss!'));
 };
 
 // These headers will allow Cross-Origin Resource Sharing (CORS).
@@ -64,10 +114,6 @@ var requestHandler = function(request, response) {
 //
 // Another way to get around this restriction is to serve you chat
 // client from this domain by setting up static file serving.
-var defaultCorsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'access-control-allow-headers': 'content-type, accept',
-  'access-control-max-age': 10 // Seconds.
-};
+module.exports.requestHandler = requestHandler;
+
 
